@@ -1,6 +1,6 @@
 # portfolio
 
-###1. ESG_folium
+### 1. ESG_folium
 
 ## 프로젝트 개요
 
