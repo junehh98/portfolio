@@ -48,7 +48,6 @@ for img_file, json_file in tqdm(zip(image_files, json_files), desc="Loading Trai
                 coordinates = []  # 변환된 numpy값 저장
 
                 for drawing in data['annotations']['drawing']:
-                    # 좌표 조정, drawing라벨의 numpy값도 255x255로 줄여줘야함
                     coordinate = np.array(drawing) * [255 / img.width, 255 / img.height]
                     coordinates.append(coordinate)
                 data_coordinates.append(coordinates)
@@ -103,7 +102,6 @@ model.fit(data_images, data_labels, batch_size=32, epochs=1, validation_split=0.
 
 # 테스트 이미지 처리
 
-# Load test images
 test_images = []
 for test_img_file in sorted(os.listdir(test_image_folder)):
     test_img_path = os.path.join(test_image_folder, test_img_file)
@@ -115,35 +113,27 @@ test_images = np.array(test_images)
 # 테스트 이미지를 텐서로 변환
 test_images = tf.convert_to_tensor(test_images)
 
-# Preprocess test images
 preprocessed_test_images = preprocess_input(test_images)
 
-# Make predictions on test images
 predictions = model.predict(preprocessed_test_images)
 
-# Visualize the results
 for i in range(len(test_images)):
     test_img = test_images[i]
     prediction = predictions[i]
 
-    # Threshold the prediction
     threshold = 0.5
     predicted_class = 1 if prediction >= threshold else 0
 
-    # Get the 이안류-affected region coordinates
     insect_coordinates = data_coordinates[i]  # Assuming data_coordinates corresponds to the test images
 
-    # Draw bounding box on the image if 이안류 is detected
+    # 이안류가 발생한 곳에 표시
     if predicted_class == 1 and insect_coordinates:
         img = Image.fromarray(test_img)
         draw = ImageDraw.Draw(img)
 
-        # Draw a rectangle for each 이안류-affected region
         for coordinate in insect_coordinates:
-            # Ensure the coordinate shape is (8,)
             if len(coordinate) == 4:
                 x1, y1, x2, y2 = coordinate
-                # Convert normalized coordinates to pixel coordinates
                 x1 *= img.width
                 y1 *= img.height
                 x2 *= img.width
